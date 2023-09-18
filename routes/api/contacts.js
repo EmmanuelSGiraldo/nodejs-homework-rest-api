@@ -1,15 +1,17 @@
-const contactModel = require('../../models/contact.js')
-
 const express = require("express");
-
-
 const router = express.Router();
 
+// Importa el modelo de contacto
+const contactModel = require("../../models/contact.js");
 
+// Ruta para obtener todos los contactos
 router.get("/", async (req, res, next) => {
   try {
+    // Obtiene el número total de contactos
     const count = await contactModel.find().countDocuments();
     console.log({ count });
+
+    // Obtiene todos los contactos
     const contacts = await contactModel.find();
     res.status(200).json(contacts);
   } catch (err) {
@@ -19,10 +21,15 @@ router.get("/", async (req, res, next) => {
     next(err);
   }
 });
+
+// Ruta para obtener un contacto por su ID
 router.get("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
-    const contact = await contactModel.findById(id); 
+
+    // Busca un contacto por su ID
+    const contact = await contactModel.findById(id);
+
     if (!contact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -35,6 +42,7 @@ router.get("/:contactId", async (req, res, next) => {
   }
 });
 
+// Ruta para agregar un nuevo contacto
 router.post("/", async (req, res, next) => {
   try {
     const { name, email, phone, favorite } = req.body;
@@ -42,17 +50,17 @@ router.post("/", async (req, res, next) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Ajustamos el valor de "favorite" según lo proporcionado en el cuerpo de la solicitud
+    // Ajusta el valor de "favorite" según lo proporcionado en el cuerpo de la solicitud
     const newContact = new contactModel({
       name,
       email,
       phone,
-      favorite: favorite || false // Asignamos el valor de "favorite" o "false" si no se proporciona
+      favorite: favorite || false, // Asigna el valor de "favorite" o "false" si no se proporciona
     });
 
     const savedContact = await newContact.save();
 
-    // Excluimos el campo "__v" de la respuesta JSON utilizando "select"
+    // Excluye el campo "__v" de la respuesta JSON utilizando "select"
     res.status(201).json(savedContact.toJSON({ select: "-__v" }));
   } catch (error) {
     if (!error.statusCode) {
@@ -62,10 +70,14 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+// Ruta para eliminar un contacto por su ID
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const deletedContact = await contactModel.findByIdAndDelete(contactId); // Utilizamos findByIdAndDelete para eliminar el contacto
+
+    // Elimina un contacto por su ID
+    const deletedContact = await contactModel.findByIdAndDelete(contactId);
+
     if (!deletedContact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -78,37 +90,35 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-
-router.put("/:contactId", async (req, res, next) => {
+// Ruta para actualizar el estado favorito de un contacto por su ID
+router.patch("/:contactId/favorite", async (req, res, next) => {
   try {
-    const id = req.params.contactId;
-    const { name, email, phone } = req.body;
-    const updatedFields = {};
+    const { contactId } = req.params;
+    const { favorite } = req.body;
 
-    if (name) {
-      updatedFields.name = name;
-    }
-    if (email) {
-      updatedFields.email = email;
-    }
-    if (phone) {
-      updatedFields.phone = phone;
+    // Verifica si el campo "favorite" está presente en el cuerpo de la solicitud
+    if (favorite === undefined) {
+      return res.status(400).json({ message: "Missing field favorite" });
     }
 
-    const updatedContact = await contactModel.findByIdAndUpdate(
-      id,
-      updatedFields,
+    // Busca el contacto por su ID
+    const contact = await contactModel.findByIdAndUpdate(
+      contactId,
+      { favorite },
       { new: true }
     );
 
-    if (!updatedContact) {
+    // Verifica si el contacto no se encontró en la base de datos
+    if (!contact) {
       return res.status(404).json({ message: "Not found" });
     }
 
-    res.status(200).json(updatedContact);
+    // Devuelve el contacto actualizado
+    res.status(200).json(contact);
   } catch (error) {
+    // Manejo de otros errores
     if (!error.statusCode) {
-      error.statusCode = 500;
+      error.statusCode = 500; // Cambia el estado a 500 en caso de otros errores
     }
     next(error);
   }

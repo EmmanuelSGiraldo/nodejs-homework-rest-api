@@ -5,25 +5,28 @@ const Schema = mongoose.Schema;
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 const phoneRegex = /^\d{10}$/;
 
-const contactSchema = new Schema({
-  favorite: {
-    type: Boolean,
-    default: false,
+const contactSchema = new Schema(
+  {
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+      required: true,
+      match: [emailRegex, "Invalid email format"], // Validación de correo electrónico
+    },
+    phone: {
+      type: String,
+      required: true,
+      match: [phoneRegex, "Invalid phone number format"], // Validación de teléfono
+    },
   },
-  name: {
-    type: String,
-    required: [true, "Set name for contact"],
-  },
-  email: {
-    type: String,
-    required: true,
-    match: [emailRegex, "Invalid email format"], // Validación de correo electrónico
-  },
-  phone: {
-    type: String,
-    required: true,
-    match: [phoneRegex, "Invalid phone number format"], // Validación de teléfono
-  },
-}, { versionKey: false });
+  { versionKey: false }
+);
 
-module.exports = mongoose.model("contacts", contactSchema);
+module.exports = mongoose.model("contact", contactSchema);
