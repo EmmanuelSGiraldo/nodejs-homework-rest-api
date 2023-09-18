@@ -2,17 +2,17 @@ const express = require("express");
 const router = express.Router();
 
 // Importa el modelo de contacto
-const contactModel = require("../../models/contact.js");
+const ContactModel = require("../../models/contact.js");
 
 // Ruta para obtener todos los contactos
 router.get("/", async (req, res, next) => {
   try {
     // Obtiene el número total de contactos
-    const count = await contactModel.find().countDocuments();
+    const count = await ContactModel.find().countDocuments();
     console.log({ count });
 
     // Obtiene todos los contactos
-    const contacts = await contactModel.find();
+    const contacts = await ContactModel.find();
     res.status(200).json(contacts);
   } catch (err) {
     if (!err.statusCode) {
@@ -28,7 +28,7 @@ router.get("/:contactId", async (req, res, next) => {
     const id = req.params.contactId;
 
     // Busca un contacto por su ID
-    const contact = await contactModel.findById(id);
+    const contact = await ContactModel.findById(id);
 
     if (!contact) {
       return res.status(404).json({ message: "Not found" });
@@ -51,7 +51,7 @@ router.post("/", async (req, res, next) => {
     }
 
     // Ajusta el valor de "favorite" según lo proporcionado en el cuerpo de la solicitud
-    const newContact = new contactModel({
+    const newContact = new ContactModel({
       name,
       email,
       phone,
@@ -76,7 +76,7 @@ router.delete("/:contactId", async (req, res, next) => {
     const { contactId } = req.params;
 
     // Elimina un contacto por su ID
-    const deletedContact = await contactModel.findByIdAndDelete(contactId);
+    const deletedContact = await ContactModel.findByIdAndDelete(contactId);
 
     if (!deletedContact) {
       return res.status(404).json({ message: "Not found" });
@@ -89,7 +89,31 @@ router.delete("/:contactId", async (req, res, next) => {
     next(error);
   }
 });
+// Ruta para actualizar un contacto por su ID
+router.put("/:contactId", async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    console.log("contactId:", contactId); // Agrega este log
+    console.log("req.body:", req.body); // Agrega este log
 
+    const updatedContact = await ContactModel.findByIdAndUpdate(
+      contactId,
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedContact) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    res.status(200).json(updatedContact);
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+});
 // Ruta para actualizar el estado favorito de un contacto por su ID
 router.patch("/:contactId/favorite", async (req, res, next) => {
   try {
@@ -99,10 +123,11 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
     // Verifica si el campo "favorite" está presente en el cuerpo de la solicitud
     if (favorite === undefined) {
       return res.status(400).json({ message: "Missing field favorite" });
-    }
+    }   
+
 
     // Busca el contacto por su ID
-    const contact = await contactModel.findByIdAndUpdate(
+    const contact = await ContactModel.findByIdAndUpdate(
       contactId,
       { favorite },
       { new: true }
