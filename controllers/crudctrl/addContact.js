@@ -8,14 +8,14 @@ const addContact = async (req, res, next) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const userId = req.user.id;
+    const owner = req.user.id;
 
     const newContact = new ContactModel({
       name,
       email,
       phone,
       favorite: favorite || false,
-      owner: userId,
+      owner: owner,
     });
 
     const savedContact = await newContact.save();

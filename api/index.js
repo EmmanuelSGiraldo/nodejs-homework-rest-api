@@ -4,7 +4,6 @@ const signupctrl = require("../controllers/authctrl/signup");
 const loginctrl = require("../controllers/authctrl/login");
 const meCtrl = require("../controllers/authctrl/me");
 const auth = require("../midddleware/auth");
-const allContactsCtrl = require("../controllers/crudctrl/allContacts");
 const contactForId = require("../controllers/crudctrl/contactForId");
 const updateForId = require("../controllers/crudctrl/updateForId");
 const addContact = require("../controllers/crudctrl/addContact");
@@ -54,10 +53,11 @@ router.post("/users/logout", validToken, auth, (req, res, next) => {
 // Ruta para obtener información del usuario autenticado
 router.get("/users/current", validToken, auth, meCtrl);
 
+
 // RUTAS DEL CRUD
 
-// Ruta para obtener todos los contactos
-router.get("/contacts", validToken, allContactsCtrl);
+// Ruta para obtener todos los contactos de usuario
+router.get("/contacts", validToken, auth, userAllContacts);
 
 // Ruta para obtener un contacto por su ID
 router.get("/contacts/:contactId", validToken, auth, contactForId);
@@ -69,12 +69,9 @@ router.put("/contacts/:contactId", validToken, auth, updateForId);
 router.post("/contacts", validToken, auth, addContact);
 
 // Ruta para actualizar el estado favorito de un contacto por su ID
-router.patch( "/contacts/:contactId/favorite", validToken,  auth,  changeFavoriteId);
+router.patch( "/contacts/:contactId/favorite", validToken, auth,  changeFavoriteId);
 
 // Ruta para Eliminar contacto por id
 router.delete("/contacts/:contactId", validToken, auth, deleteContact);
-
-// Ruta para obtener todos los contactos del usuario autenticado se requiere owner con token
-router.get("/contacts/user/:userId", validToken, auth, userAllContacts);
 
 module.exports = router;
