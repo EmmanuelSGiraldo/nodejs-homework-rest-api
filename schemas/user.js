@@ -23,6 +23,10 @@ const userSchema = new Schema({
     enum: ["starter", "pro", "business"],
     default: "starter",
   },
+  avatarURL: {
+    type: String,
+    required: true,
+  },
 });
 userSchema.methods.setPassword = function (password) {
   this.password = bCrypt.hashSync(password, bCrypt.genSaltSync(6));
