@@ -1,22 +1,20 @@
 const User = require("../../schemas/user");
-require("dotenv").config();
+const { Conflict, BadRequest } = require("http-errors");
+const gravatar = require("gravatar");
 
 const signupctrl = async (req, res, next) => {
-  const { username, email, password, subscription } = req.body; 
-  
+  const { username, email, password, subscription } = req.body;
+
   try {
     const user = await User.findOne({ email });
 
     if (user) {
-      return res.status(409).json({
-        status: "error",
-        code: 409,
-        message: "Email is already in use",
-        data: "Error Conflict",
-      });
+      throw new Conflict("Email is already in use");
     }
 
-    const newUser = new User({ username, email, subscription }); 
+    const avatarURL = gravatar.url(email);
+
+    const newUser = new User({ username, email, subscription, avatarURL });
     newUser.setPassword(password);
     await newUser.save();
 
@@ -24,10 +22,17 @@ const signupctrl = async (req, res, next) => {
       status: "success",
       code: 201,
       data: {
-        message: "Registration successful",
+        user: {
+          username,
+          email,
+          avatarURL,
+        },
       },
     });
   } catch (error) {
+    if (error.name === "ValidationError") {
+      return next(new BadRequest("Validation error"));
+    }
     next(error);
   }
 };

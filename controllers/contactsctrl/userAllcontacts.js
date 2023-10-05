@@ -2,12 +2,10 @@ const ContactModel = require("../../schemas/contacts");
 
 const userAllContacts = async (req, res, next) => {
   try {
-    // Desestructuración para obtener el ID del usuario
-    const { id: owner } = req.user;
+    const userId = req.user.id;
+    const userContacts = await ContactModel.find({ owner: userId });
 
-    const result = await ContactModel.find({ owner });
-
-    res.status(200).json(result);
+    res.status(200).json(userContacts);
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -17,4 +15,3 @@ const userAllContacts = async (req, res, next) => {
 };
 
 module.exports = userAllContacts;
-

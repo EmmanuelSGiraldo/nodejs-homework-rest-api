@@ -2,16 +2,21 @@ const express = require("express");
 const cors = require("cors");
 const association = require("./db/association");
 require("dotenv").config();
-const routerApi = require("./api");
+
+const authRouter = require("./api/routes/authRoutes");
+const contactsRouter = require("./api/routes/contactsRoutes");
+const userRouter = require("./api/routes/userRoutes");
 
 const app = express();
-
-app.use(express.json());
 app.use(cors());
-
+app.use(express.json());
 require("./config/config-passport");
 
-app.use("/api", routerApi);
+app.use(express.static("public"));
+
+app.use("/api", authRouter);
+app.use("/api", contactsRouter);
+app.use("/api", userRouter);
 
 app.use((_, res) => {
   res.status(404).json({
