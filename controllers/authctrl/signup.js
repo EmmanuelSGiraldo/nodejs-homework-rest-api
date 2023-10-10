@@ -1,6 +1,8 @@
 const User = require("../../schemas/user");
 const { Conflict, BadRequest } = require("http-errors");
 const gravatar = require("gravatar");
+const emailService = require("../../config/emailService");
+const tokenService = require("../../config/tokenService");
 
 const signupctrl = async (req, res, next) => {
   const { username, email, password, subscription } = req.body;
@@ -14,9 +16,20 @@ const signupctrl = async (req, res, next) => {
 
     const avatarURL = gravatar.url(email);
 
-    const newUser = new User({ username, email, subscription, avatarURL });
+    const verificationToken = tokenService.generateVerificationToken();
+
+    const newUser = new User({
+      username,
+      email,
+      subscription,
+      avatarURL,
+      verificationToken,
+    });
+
     newUser.setPassword(password);
     await newUser.save();
+
+    await emailService.sendVerificationEmail(email, verificationToken);
 
     res.status(201).json({
       status: "success",
@@ -26,6 +39,7 @@ const signupctrl = async (req, res, next) => {
           username,
           email,
           avatarURL,
+          verificationToken,
         },
       },
     });
