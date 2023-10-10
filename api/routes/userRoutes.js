@@ -5,6 +5,8 @@ const auth = require("../../midddleware/auth");
 const meCtrl = require("../../controllers/userctrl/me");
 const upload = require("../../midddleware/upload")
 const updateAvatar = require("../../controllers/userctrl/updateAvartar")
+const emailVerify = require("../../controllers/userctrl/emailVerify");
+
 
 // Ruta para obtener información (contactos) del usuario autenticado
 router.get("/users/current", validToken, auth, meCtrl);
@@ -16,5 +18,7 @@ router.post("/upload-avatar", upload.single("avatar"), (req, res) => {
 
 // Ruta para modificar avatar & jimp
 router.patch("/users/avatar", validToken,auth,upload.single("avatar"),updateAvatar);
+
+router.get("/users/verify/:verificationToken", validToken, emailVerify);
 
 module.exports = router;
