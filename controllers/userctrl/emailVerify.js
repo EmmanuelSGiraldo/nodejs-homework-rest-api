@@ -12,9 +12,14 @@ const emailVerify = async (req, res, next) => {
       throw new NotFound("User not found");
     }
 
-    user.verify = true;
-    user.verificationToken = null; 
-    await user.save();
+    await User.updateOne(
+      { verificationToken },
+      {verify: true,  verificationToken: null}
+    );
+
+    // user.verify = true;
+    // user.verificationToken = null; 
+    // await user.save();
 
     res.status(200).json({
       status: "success",
