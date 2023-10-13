@@ -16,6 +16,16 @@ const loginctrl = async (req, res, next) => {
     });
   }
 
+  // Verifica si el usuario está verificado
+  if (!user.verify) {
+    return res.status(403).json({
+      status: "error",
+      code: 403,
+      message: "Unverified user",
+      data: "Forbidden",
+    });
+  }
+
   const payload = {
     id: user.id,
     username: user.username,
